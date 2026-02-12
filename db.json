@@ -1,0 +1,33 @@
+{
+  "posts": [
+    {
+      "id": "4b4b",
+      "title": "Title 1",
+      "description": "Lorem Ipsum is simply dummy text",
+      "author": "jaydeep",
+       "image":"https://avatars.mds.yandex.net/i?id=f6a2cbc716928af0a7b6250be30b638d1b7b5270-5858200-images-thumbs&n=13",
+      "createdAt": "2026-02-06T10:41:07.837Z"
+     
+    },
+    {
+      "id": "4b4b",
+      "title": "Title 1",
+      "description": "Lorem Ipsum is simply dummy text",
+      "author": "jaydeep",
+      "image":"https://avatars.mds.yandex.net/i?id=f6a2cbc716928af0a7b6250be30b638d1b7b5270-5858200-images-thumbs&n=13",
+      "createdAt": "2026-02-06T10:41:07.837Z"
+      
+
+    },
+     {
+      "id": "4b4b",
+      "title": "Title 1",
+      "description": "Lorem Ipsum is simply dummy text",
+      "author": "jaydeep",
+      "image":"https://avatars.mds.yandex.net/i?id=f6a2cbc716928af0a7b6250be30b638d1b7b5270-5858200-images-thumbs&n=13",
+      "createdAt": "2026-02-06T10:41:07.837Z"
+      
+
+    }
+  ]
+}
