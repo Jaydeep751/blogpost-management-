@@ -1,9 +1,18 @@
-import { FaBlog, FaChartBar, FaHome, FaPlusSquare, FaSignOutAlt } from "react-icons/fa";
+import {
+  FaBlog,
+  FaChartBar,
+  FaHome,
+  FaPlusSquare,
+  FaSignOutAlt,
+  FaSun,FaMoon,
+} from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
+import { useTheme } from "../context/ThemeContext";
 
 const Navbar = ({ onLogout }) => {
   const navigate = useNavigate();
+  const {theme,toggleTheme}=useTheme();
 
   const loginData = JSON.parse(localStorage.getItem("loginData") || "{}");
 
@@ -34,7 +43,7 @@ const Navbar = ({ onLogout }) => {
           >
             <FaHome className="nav-icon" /> Home
           </NavLink>
-            <NavLink
+          <NavLink
             to="/create-post"
             className={({ isActive }) =>
               isActive ? "navbar-item active" : "navbar-item"
@@ -54,8 +63,16 @@ const Navbar = ({ onLogout }) => {
           </NavLink>
         </div>
 
+
         <div className="navbar-actions">
+
           <span className="user-name">Hi, {userName}</span>
+          <button className="theme-toggle-btn"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          >
+            {theme === 'light'?<FaMoon/>:<FaSun/> }
+          </button>
           <button className="logout-btn" onClick={onLogout}>
             <FaSignOutAlt /> Logout
           </button>

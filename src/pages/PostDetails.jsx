@@ -40,14 +40,14 @@ const PostDetails = () => {
     navigate("/dashboard");
   };
 
-  // Calculate read time (simple: 200 words per minute)
+
   const calculateReadTime = (text) => {
     if (!text) return 1;
     const words = text.split(/\s+/).length;
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  // Share on Twitter
+  
   const shareOnTwitter = () => {
     const text = encodeURIComponent(`Check out this post: ${post.title}`);
     const url = encodeURIComponent(window.location.href);
@@ -57,7 +57,6 @@ const PostDetails = () => {
     );
   };
 
-  // Share on LinkedIn
   const shareOnLinkedIn = () => {
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(post.title);
@@ -68,14 +67,14 @@ const PostDetails = () => {
     );
   };
 
-  // Copy link to clipboard
+ 
   const copyLinkToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopySuccess(true);
       toast.success("Link copied to clipboard!");
 
-      // Reset success message after 2 seconds
+      
       setTimeout(() => {
         setCopySuccess(false);
       }, 2000);

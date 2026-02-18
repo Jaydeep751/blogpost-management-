@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Bar,
@@ -13,19 +14,51 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import "./Analytics.css";
 
 const Analytics = () => {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 3;
+  const postsPerPage = 5;
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#FF6B6B", "#6B66FF"];
 
-  // Fetch posts on component mount
+  const handleLogout = () => {
+    localStorage.removeItem("loginData");
+    navigate("/login");
+  };
+
+  const handleEdit = (id) => {
+    navigate(`/edit-post/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        const response = await fetch(`http://localhost:3000/posts/${id}`, {
+          method: "DELETE",
+        });
+        
+        if (response.ok) {
+          setPosts(posts.filter(post => post.id !== id));
+          // Update chart data after deletion
+          processChartData(posts.filter(post => post.id !== id));
+          toast.success("Post deleted successfully");
+        } else {
+          toast.error("Failed to delete post");
+        }
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        toast.error("Error deleting post");
+      }
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -37,8 +70,6 @@ const Analytics = () => {
       if (response.ok) {
         const data = await response.json();
         setPosts(data);
-        
-        // Process data for charts
         processChartData(data);
       } else {
         toast.error("Failed to fetch posts");
@@ -51,36 +82,29 @@ const Analytics = () => {
     }
   };
 
-  // Process posts data for charts (group by author)
   const processChartData = (postsData) => {
-    const authorMap = new Map();
-    
-    postsData.forEach(post => {
-      const author = post.author || "Unknown";
-      if (authorMap.has(author)) {
-        authorMap.set(author, authorMap.get(author) + 1);
-      } else {
-        authorMap.set(author, 1);
-      }
-    });
+    // Calculate author statistics
+    const authorStats = postsData.reduce((acc, post) => {
+      const author = post.author || 'Unknown';
+      acc[author] = (acc[author] || 0) + 1;
+      return acc;
+    }, {});
 
-    const chartDataArray = [];
-    authorMap.forEach((posts, name) => {
-      chartDataArray.push({ name, posts });
-    });
+    // Convert to array format for charts
+    const chartDataArray = Object.keys(authorStats).map(author => ({
+      name: author,
+      posts: authorStats[author]
+    }));
 
     setChartData(chartDataArray);
   };
 
-  // Get current posts for pagination
+  // Pagination calculations
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
-
-  // Calculate total pages
   const totalPages = Math.ceil(posts.length / postsPerPage);
 
-  // Handle page change
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -99,7 +123,7 @@ const Analytics = () => {
 
   return (
     <div className="analytics-page">
-      <Navbar />
+      <Navbar onLogout={handleLogout} />
       <main className="analytics-main">
         <header className="analytics-header">
           <h1>Blog Analytics</h1>
@@ -116,7 +140,7 @@ const Analytics = () => {
                 <div className="chart-wrapper">
                   {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={chartData}>
+                      <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
@@ -131,7 +155,6 @@ const Analytics = () => {
                 </div>
               </div>
 
-              {/* Pie chart */}
               <div className="chart-card">
                 <h3>Distribution</h3>
                 <div className="chart-wrapper">
@@ -145,7 +168,10 @@ const Analytics = () => {
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="posts"
-                          label
+                          nameKey="name"
+                          label={({ name, percent }) => 
+                            `${name}: ${(percent * 100).toFixed(0)}%`
+                          }
                         >
                           {chartData.map((entry, index) => (
                             <Cell
@@ -164,7 +190,6 @@ const Analytics = () => {
               </div>
             </div>
 
-            {/* Dynamic table */}
             <div className="posts-table-section">
               <h3>All Posts</h3>
               <div className="table-wrapper">
@@ -175,6 +200,7 @@ const Analytics = () => {
                       <th>Title</th>
                       <th>Author</th>
                       <th>Date</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -184,43 +210,64 @@ const Analytics = () => {
                           <td>{post.id}</td>
                           <td>{post.title}</td>
                           <td>{post.author}</td>
-                          <td>{post.date || new Date(post.createdAt).toLocaleDateString('en-GB')}</td>
+                          <td>
+                            {post.date ||
+                              new Date(post.createdAt || Date.now()).toLocaleDateString(
+                                "en-GB",
+                              )}
+                          </td>
+                           <td className="action-buttons">
+                            <button
+                              className="edit-btn"
+                               onClick={() => handleEdit(post.id)}
+                                title="Edit">
+                                  ✏️
+                            </button>
+                           <button
+                           className="delete-btn"
+                           onClick={() => handleDelete(post.id)}
+                           title="Delete"
+                           >🗑️
+
+                           </button>
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" className="no-data">No posts available</td>
+                        <td colSpan="5" className="no-data">
+                          No posts available
+                        </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Dynamic pagination */}
               {posts.length > postsPerPage && (
                 <div className="pagination">
-                  <button 
-                    className="page-btn" 
+                  <button
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
+                    className="page-btn"
                   >
                     Previous
                   </button>
-                  
+
                   {[...Array(totalPages)].map((_, index) => (
                     <button
                       key={index + 1}
-                      className={`page-btn ${currentPage === index + 1 ? 'active' : ''}`}
                       onClick={() => handlePageChange(index + 1)}
+                      className={`page-btn ${currentPage === index + 1 ? "active" : ""}`}
                     >
                       {index + 1}
                     </button>
                   ))}
-                  
-                  <button 
-                    className="page-btn" 
+
+                  <button
                     onClick={handleNext}
                     disabled={currentPage === totalPages}
+                    className="page-btn"
                   >
                     Next
                   </button>
