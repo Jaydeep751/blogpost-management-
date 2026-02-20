@@ -6,9 +6,10 @@ import {
 import { ToastContainer } from "react-toastify";
 import "./App.css";
 import AuthGuard from "./auth/AuthGuard.jsx";
-import Analytics from "./pages/Analytics.jsx"; // Analytics import karein
+import Analytics from "./pages/Analytics.jsx";
 import CreatePost from "./pages/CreatePost";
 import Dashboard from "./pages/Dashboard";
+import Favorites from "./pages/Favorites.jsx";
 import Login from "./pages/Login.jsx";
 import PostDetails from "./pages/PostDetails.jsx";
 import Register from "./pages/Register.jsx";
@@ -52,7 +53,7 @@ function App() {
       ),
     },
     {
-      path: "/analytics", 
+      path: "/analytics",
       element: (
         <AuthGuard required={true}>
           <Analytics />
@@ -80,6 +81,14 @@ function App() {
       element: (
         <AuthGuard required={true}>
           <PostDetails />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: "/favorites",
+      element: (
+        <AuthGuard required={true}>
+          <Favorites />
         </AuthGuard>
       ),
     },

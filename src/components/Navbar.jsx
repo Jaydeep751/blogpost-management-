@@ -2,24 +2,50 @@ import {
   FaBlog,
   FaChartBar,
   FaHome,
+  FaMoon,
   FaPlusSquare,
   FaSignOutAlt,
-  FaSun,FaMoon,
+  FaStar,
+  FaSun,
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
-import "./Navbar.css";
 import { useTheme } from "../context/ThemeContext";
+import "./Navbar.css";
 
 const Navbar = ({ onLogout }) => {
   const navigate = useNavigate();
-  const {theme,toggleTheme}=useTheme();
+  const { theme, toggleTheme } = useTheme();
 
-  const loginData = JSON.parse(localStorage.getItem("loginData") || "{}");
+  // Fixed: Safely parse localStorage data
+  const loginData = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("loginData") || "{}");
+    } catch {
+      return {};
+    }
+  })();
 
-  const allUsers = JSON.parse(localStorage.getItem("authData") || "[]");
+  const allUsers = (() => {
+    try {
+      const data = localStorage.getItem("authData");
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  })();
 
-  const currentUser = allUsers.find((user) => user.email === loginData.email);
-  const userName = currentUser?.username || "User";
+  // Fixed: Check if allUsers is an array before using find
+  let userName = "User";
+  if (loginData?.email) {
+    if (Array.isArray(allUsers)) {
+      const currentUser = allUsers.find(
+        (user) => user.email === loginData.email,
+      );
+      userName = currentUser?.username || loginData.email.split("@")[0];
+    } else {
+      userName = loginData.email.split("@")[0];
+    }
+  }
 
   const handleCreatePostClick = (e) => {
     e.preventDefault();
@@ -61,18 +87,27 @@ const Navbar = ({ onLogout }) => {
           >
             <FaChartBar className="nav-icon" /> Analytics
           </NavLink>
+          <NavLink
+            to="/favorites"
+            className={({ isActive }) =>
+              isActive ? "navbar-item active" : "navbar-item"
+            }
+          >
+            <FaStar className="nav-icon" /> Favorites
+          </NavLink>
         </div>
 
-
         <div className="navbar-actions">
-
           <span className="user-name">Hi, {userName}</span>
-          <button className="theme-toggle-btn"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
+
+          <button
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
           >
-            {theme === 'light'?<FaMoon/>:<FaSun/> }
+            {theme === "light" ? <FaMoon /> : <FaSun />}
           </button>
+
           <button className="logout-btn" onClick={onLogout}>
             <FaSignOutAlt /> Logout
           </button>
@@ -82,4 +117,4 @@ const Navbar = ({ onLogout }) => {
   );
 };
 
-export default Navbar;
+export default Navbar;  
